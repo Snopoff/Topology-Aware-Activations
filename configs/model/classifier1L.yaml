@@ -1,0 +1,7 @@
+_target_: src.models.Classifier1L
+
+dim_of_in: 3
+num_of_hidden: 2
+dim_of_hidden: 3
+use_batch_norm: False
+initialize_weights: True

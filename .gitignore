@@ -1,0 +1,16 @@
+__pycache__/
+.ipynb_checkpoints/
+.DS_Store
+*.png
+*.zip
+wandb
+_*
+outputs
+.vscode
+*_logs
+*Lightning
+Lightning*
+*Experiments
+logs
+*.log
+*_old.py

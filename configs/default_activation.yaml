@@ -1,0 +1,13 @@
+experiment:
+  wandb_project: ActivationExperiments
+  n_experiments: 10
+
+defaults:
+  - data: curves_on_torus
+  - activation: relu
+  - model: classifierAL
+  - trainer: default
+  - experiment: default
+  - logging: default
+  - hydra: default_multirun
+  - _self_

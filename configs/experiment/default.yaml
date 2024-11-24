@@ -1,0 +1,9 @@
+wandb_project: ???
+n_experiments: 5
+log_dir: ./logs/${.wandb_project}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+wandb_dir: ${.log_dir}/wandb_outputs/
+accelerator: cpu
+offline: False
+
+seed: 0
+save_split_results: True

@@ -1,0 +1,2 @@
+_target_: src.models.split_tanh
+lamb: 10.0

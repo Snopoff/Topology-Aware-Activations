@@ -1,0 +1,15 @@
+defaults:
+  - override hydra_logging: colorlog
+  - override job_logging: colorlog
+
+sweep:
+  dir: ${experiment.log_dir}/hydra_outputs/
+
+mode: MULTIRUN
+
+sweeper:
+  params:
+    model.num_of_hidden: 3 #1,2,3
+    model.dim_of_hidden: 4 #range(${model.dim_of_in},5)
+    experiment.seed: range(0,${experiment.n_experiments})
+    activation: sigmoid,tanh,prelu,relu,split_sign,split_tanh,split_sincos

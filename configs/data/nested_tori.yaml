@@ -1,0 +1,4 @@
+_target_: src.datasets.NestedTori
+n_in_row: 1
+n_in_nest: 2
+base_n_points: 100

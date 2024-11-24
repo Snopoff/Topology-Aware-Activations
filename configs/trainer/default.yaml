@@ -1,0 +1,5 @@
+test_ratio: 0.3
+batch_size: -1
+epochs: 100
+optimizer_lr: 0.05
+auto_lr_find: False

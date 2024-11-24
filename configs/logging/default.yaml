@@ -1,0 +1,6 @@
+num_hidden: ${model.num_of_hidden}
+dim_hidden: ${model.dim_of_hidden}
+activation: ${hydra:runtime.choices.activation}
+data: ${hydra:runtime.choices.data}
+epochs: ${trainer.epochs}
+model: ${hydra:runtime.choices.model}

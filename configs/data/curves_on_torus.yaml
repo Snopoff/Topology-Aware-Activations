@@ -1,0 +1,8 @@
+_target_: src.datasets.CurvesOnTorus
+n_revolutions: 3
+n_points: 1000
+R: 5
+r: 2
+spiral_radius: 0.5
+link_offset: ${get_object:numpy.pi}
+noise: 1.5
