@@ -1,9 +1,9 @@
 experiment:
-  wandb_project: ActivationExperiments
+  wandb_project: TCExperiments
   n_experiments: 10
 
 defaults:
-  - data: curves_on_torus
+  - data: circles
   - activation: relu
   - model: classifierAL
   - trainer: default

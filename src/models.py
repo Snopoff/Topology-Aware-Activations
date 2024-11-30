@@ -170,19 +170,19 @@ class ClassifierAL(nn.Module):
         return x
 
     def forward_with_save(self, x, **kwargs):
-        self.topo_info[0] = topological_complexity(x.cpu().detach().numpy(), **kwargs)
+        self.topo_info[0] = topological_complexity(x.detach().numpy(), **kwargs)
         x = self.fc_in(x)
         if self.norm:
             x = self.norm(x)
         x = self.activation(x)
-        self.topo_info[1] = topological_complexity(x.cpu().detach().numpy(), **kwargs)
+        self.topo_info[1] = topological_complexity(x.detach().numpy(), **kwargs)
 
         for i, l in enumerate(self.hiddens[:-1]):
             x = self.activation(l(x))
-            self.topo_info[i + 2] = topological_complexity(x.cpu().detach().numpy(), **kwargs)
+            self.topo_info[i + 2] = topological_complexity(x.detach().numpy(), **kwargs)
 
         x = F.relu(self.hiddens[-1](x))
-        self.topo_info[-1] = topological_complexity(x.cpu().detach().numpy(), **kwargs)
+        self.topo_info[-1] = topological_complexity(x.detach().numpy(), **kwargs)
 
         x = self.fc_out(x)
 
@@ -222,6 +222,11 @@ class LightningModel(L.LightningModule):
         logits = self.forward(features)
         loss = F.cross_entropy(logits, true_labels)
         self.log("val_loss", loss, prog_bar=True)
+
+    def compute_topological_complexity(self, x, **kwargs):
+        _ = self.model.forward_with_save(x, **kwargs)
+
+        return self.model.topo_info
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)

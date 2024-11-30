@@ -1,7 +1,10 @@
 import numpy as np
+import pandas as pd
+
+from typing import Tuple
 
 
-def create_ring(center, inner_radius, outer_radius, num_points):
+def create_ring(center, inner_radius, outer_radius, num_points) -> np.ndarray:
     """
     Create a ring with a given center, inner radius, and outer radius containing num_points.
     """
@@ -12,7 +15,7 @@ def create_ring(center, inner_radius, outer_radius, num_points):
     return np.vstack((x, y)).T
 
 
-def create_torus(center, major_radius, minor_radius, num_points):
+def create_torus(center, major_radius, minor_radius, num_points) -> np.ndarray:
     """
     Create a torus with a given center, major radius, and minor radius containing num_points.
     """
@@ -29,7 +32,7 @@ def create_torus(center, major_radius, minor_radius, num_points):
     return np.vstack((x, y, z)).T
 
 
-def create_sphere(center, radius, num_points):
+def create_sphere(center, radius, num_points) -> np.ndarray:
     """
     Create a sphere with a given center and radius containing num_points.
     """
@@ -44,3 +47,12 @@ def create_sphere(center, radius, num_points):
     z = center[2] + radius * np.cos(phi)
 
     return np.vstack((x, y, z)).T
+
+
+def prepare_data_from_csv(csv_path: str) -> Tuple[np.ndarray, np.ndarray]:
+    df = pd.read_csv(csv_path)
+    print(len(df.dropna()))
+
+
+if __name__ == "__main__":
+    prepare_data_from_csv("data/Titanic/train.csv")

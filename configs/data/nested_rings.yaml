@@ -1,5 +1,5 @@
-_target_: src.datasets.NestedRings
-n_in_row: 1
+_target_: src.datasets.NestedRingsOld
+n_in_row: 2
 n_in_nest: 2
 base_n_points: 5000
 radius_factor: 0.5

@@ -1,5 +1,5 @@
 from .topology import compute_homology
-from .data_utils import create_ring, create_torus, create_sphere
+from .data_utils import create_ring, create_torus, create_sphere, prepare_data_from_csv
 from .visualisations import scatterplot
 
 from typing import List, Union, Dict, Any, Tuple
@@ -7,83 +7,12 @@ from typing import List, Union, Dict, Any, Tuple
 import numpy as np
 from sklearn import datasets as dt
 from sklearn import preprocessing
+from sklearn.datasets import load_breast_cancer
 import torch
 from torch.utils.data import TensorDataset, random_split, DataLoader
 
 
 from abc import ABC, abstractmethod
-
-
-class Dataset:
-    """
-    A class to represent a dataset.
-
-    ...
-
-    Attributes:
-    ----------
-    X: np.ndarray
-    y: np.ndarray
-    """
-
-    def __init__(self, X: np.ndarray, y: np.ndarray, name="", homology=None, scale=None):
-        self.X = X
-        self.y = y
-        self.name = name
-        self.size = self.X.shape[0]
-        self.dim = self.X.shape[1]
-        self.homology = homology
-        self.scale = scale if scale is not None else self.__find_scale()
-
-    def train_test_split(self, test_ratio=0.2, val=False, val_ratio=0.2, datatype="numpy", device=None):
-        data = np.hstack([self.X, self.y.reshape(-1, 1)])
-        np.random.shuffle(data)
-        if datatype == "torch":
-            data = torch.Tensor(data)
-            if device:
-                data = data.to(device)
-        test_thres = int(self.size * test_ratio)
-        test_x, test_y = data[test_thres:, :-1], data[test_thres:, -1]
-        train_x, train_y = data[:-test_thres, :-1], data[:-test_thres, -1]
-
-        if val:
-            val_thres = int(self.size * val_ratio)
-            val_x, val_y = train_x[val_thres:, :], train_y[val_thres:, :]
-            train_x, train_y = train_x[:-val_thres, :], train_y[:-val_thres, :]
-            return train_x, train_y, val_x, val_y, test_x, test_y
-
-        return train_x, train_y, test_x, test_y
-
-    def plot_data(self, save=False):
-        if self.dim == 2:
-            return scatterplot(x_coords=self.X[:, 0], y_coords=self.X[:, 1], color=self.y, save=save)
-        if self.dim == 3:
-            return scatterplot(
-                x_coords=self.X[:, 0],
-                y_coords=self.X[:, 1],
-                z_coords=self.X[:, 2],
-                dim=3,
-                color=self.y,
-                save=save,
-            )
-
-    def __find_scale(self):
-        data = self.X[self.y == 0]
-        homology = compute_homology(data, maxdim=1)["dgms"][1:]
-        best_scale = 0
-        best_error = np.infty
-        scale_range = np.linspace(
-            min([pair[0] for pair in homology[0]]),
-            max([pair[1] for pair in homology[0]]),
-            20,
-        )
-        for scale in scale_range:
-            res_at_scale = [gen for hom in homology for gen in hom if gen[0] <= scale and scale < gen[1]]
-            b = len(res_at_scale)
-            if np.abs(b - self.homology[1][1]) < best_error:
-                best_scale = scale
-
-        return best_scale
 
 
 class Dataset:
@@ -364,49 +293,6 @@ class Tori(Dataset):
 
         return X, y_total
 
-    def __generate_data_old(self, q=3):
-        X1, y1 = self.__gen_ring((q, q, q), 0)
-        X2, y2 = self.__gen_ring((-q, -q, q), 1)
-        X3, y3 = self.__gen_ring((-q, q, -q), 0)
-        X4, y4 = self.__gen_ring((q, -q, -q), 1)
-        X5, y5 = self.__gen_ring((0, 0, 0), 0)
-        X6, y6 = self.__gen_ring((-q, -q, -q), 0)
-        X7, y7 = self.__gen_ring((q, q, -q), 1)
-        X8, y8 = self.__gen_ring((-q, q, q), 0)
-        X9, y9 = self.__gen_ring((q, -q, q), 1)
-
-        X_total = np.concatenate((X1, X2), axis=0)
-        y_total = np.concatenate((y1, y2), axis=0)
-
-        X_total = np.concatenate((X_total, X3), axis=0)
-        y_total = np.concatenate((y_total, y3), axis=0)
-
-        X_total = np.concatenate((X_total, X4), axis=0)
-        y_total = np.concatenate((y_total, y4), axis=0)
-
-        X_total = np.concatenate((X_total, X5), axis=0)
-        y_total = np.concatenate((y_total, y5), axis=0)
-
-        X_total = np.concatenate((X_total, X6), axis=0)
-        y_total = np.concatenate((y_total, y6), axis=0)
-
-        X_total = np.concatenate((X_total, X7), axis=0)
-        y_total = np.concatenate((y_total, y7), axis=0)
-
-        X_total = np.concatenate((X_total, X8), axis=0)
-        y_total = np.concatenate((y_total, y8), axis=0)
-
-        X_total = np.concatenate((X_total, X9), axis=0)
-        y_total = np.concatenate((y_total, y9), axis=0)
-
-        X = X_total.copy()
-        y = y_total.copy()
-
-        max_abs_scaler = preprocessing.MaxAbsScaler()
-        X = max_abs_scaler.fit_transform(X)
-
-        return X, y
-
 
 class Disks(Dataset):
     def __init__(self, random=False, grid_min=-9, grid_max=9, res=0.19, big_r=7, small_r=2.1, n=9):
@@ -650,123 +536,11 @@ class CurvesOnTorus(Dataset):
         return np.column_stack((x, y, z))
 
 
-class NestedRingsOld(Dataset):
-    def __init__(
-        self,
-        base_n_points=2000,
-        n_in_row=2,
-        n_in_nest=3,
-        radius_factor=0.5,
-        base_radius=10,
-        noise=1.5,
-    ):
-        self.base_n_points = base_n_points
-        self.n_in_row = n_in_row
-        self.n_in_nest = n_in_nest
-        self.radius_factor = radius_factor
-        self.base_radius = base_radius
-        self.noise = noise
-        self.centers = [
-            (
-                (i * 2 - (n_in_row - 1)) * base_radius * self.noise,
-                self.noise * np.random.randn(),
-            )
-            for i in range(n_in_row)
-        ]
-        homology = {
-            0: [
-                self.n_in_nest * self.n_in_row,
-                self.n_in_nest * self.n_in_row,
-            ],
-            1: [
-                self.n_in_nest * self.n_in_row,
-                self.n_in_nest * self.n_in_row,
-            ],
-        }
-        super().__init__(*self.__generate_data(), name="nested_rings", homology=homology)
-
-    def __generate_data(self):
-        data = []
-        labels = []
-
-        for center in self.centers:
-            for i in range(self.n_in_nest):
-                """Prepare parameters for `create_ring` function call."""
-                outer_radius = self.base_radius * self.radius_factor**i
-                inner_radius = (outer_radius + 3) * self.radius_factor
-                num_points = self.base_n_points // (i + 1)
-                """Call `create_ring` function."""
-
-                ring = create_ring(
-                    np.array(center) + self.noise * np.random.rand(),
-                    inner_radius,
-                    outer_radius,
-                    num_points,
-                )
-                data.append(ring)
-
-                label = 0 if i % 2 == 0 else 1
-                labels.append(np.full(num_points, label, dtype=int))
-
-        data = np.vstack(data)
-        labels = np.concatenate(labels)
-
-        return data, labels
-
-
-class NestedToriOld(Dataset):
-    def __init__(
-        self,
-        base_n_points=100,
-        n_in_row=2,
-        n_in_nest=3,
-        radius_factor=0.5,
-        base_radius=10,
-        add_radius=2,
-        noise=1.5,
-    ):
-        self.base_n_points = base_n_points
-        self.n_in_row = n_in_row
-        self.n_in_nest = n_in_nest
-        self.radius_factor = radius_factor
-        self.base_radius = base_radius
-        self.add_radius = add_radius
-        self.noise = noise
-        self.centers = [((i * 2 - (self.n_in_row - 1)) * self.base_radius * 3, 0, 0) for i in range(self.n_in_row)]
-        homology = {
-            0: [
-                self.n_in_nest * self.n_in_row,
-                self.n_in_nest * self.n_in_row,
-            ],
-            1: [
-                self.n_in_nest * self.n_in_row,
-                self.n_in_nest * self.n_in_row,
-            ],
-        }
-        super().__init__(*self.__generate_data(), name="nested_tori", homology=homology)
-
-    def __generate_data(self):
-        data = []
-        labels = []
-
-        for center in self.centers:
-            for i in range(self.n_in_nest):
-                """Prepare parameters for `create_torus` function call."""
-                major_radius = self.base_radius * (self.radius_factor**i)
-                minor_radius = self.add_radius * (self.radius_factor**i)
-                num_points = self.base_n_points // (i + 1)
-                """Call `create_torus` function."""
-
-                torus = create_torus(center, major_radius, minor_radius, num_points)
-                data.append(torus)
-
-                label = 0 if i % 2 == 0 else 1
-                labels.append(np.full(torus.shape[0], label, dtype=int))
-
-        data = np.vstack(data)
-        labels = np.concatenate(labels)
-
-        return data, labels
+class BreastCancer(Dataset):
+    def __init__(self):
+        X, y = load_breast_cancer(return_X_y=True)
+        name = "Breast cancer"
+        super().__init__(X, y, name)
 
 
 def main():

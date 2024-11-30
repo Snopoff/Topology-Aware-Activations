@@ -1,6 +1,6 @@
 _target_: src.models.ClassifierAL
 
-dim_of_in: 3
+dim_of_in: 30
 num_of_hidden: 2
 dim_of_hidden: 3
 use_batch_norm: False

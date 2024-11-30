@@ -9,7 +9,8 @@ mode: MULTIRUN
 
 sweeper:
   params:
-    model.num_of_hidden: 3 #1,2,3
-    model.dim_of_hidden: 4 #range(${model.dim_of_in},5)
+    data: cancer
+    model.num_of_hidden: 2 #3,4,5
+    model.dim_of_hidden: 80,100 #40,80,100 #range(${model.dim_of_in},10) #,8)
+    activation: tanh,prelu,relu,split_tanh,split_sincos #,split_sign,sigmoid
     experiment.seed: range(0,${experiment.n_experiments})
-    activation: sigmoid,tanh,prelu,relu,split_sign,split_tanh,split_sincos

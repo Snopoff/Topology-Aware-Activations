@@ -18,7 +18,6 @@ class Experiments:
         self.config = config
         self.dataset = hydra.utils.instantiate(config["data"])
         self.model = hydra.utils.instantiate(config["model"])
-        wandb.require("core")
 
     def run(self):
         seed_everything(self.config["experiment"]["seed"] + 1, workers=True)
@@ -61,6 +60,21 @@ class Experiments:
             train_dataloaders=train_loader,
             val_dataloaders=test_loader,
         )
+
+        #! === Computing TC ===
+        topo_info_per_layer = lightning_model.compute_topological_complexity(
+            self.dataset.tensor_dataset.tensors[0], labels=self.dataset.tensor_dataset.tensors[1], subsample_size=None
+        )
+
+        """tc_per_layer = [layer[-1] for layer in topo_info_per_layer]
+        for tc in tc_per_layer:
+            wandb_logger.experiment.log({"TC": tc})"""
+
+        tc_per_layer_per_label = [[layer[0], layer[1]] for layer in topo_info_per_layer]
+
+        for tc in tc_per_layer_per_label:
+            wandb_logger.experiment.log({"TC_Label_0": tc[0], "TC_Label_1": tc[1]})
+
         wandb_logger.experiment.finish()
 
 
@@ -69,75 +83,6 @@ class ActivationExperiments(Experiments):
         super().__init__(config)
         self.activation = hydra.utils.instantiate(config["activation"])
         self.model = hydra.utils.instantiate(config["model"], activation=self.activation)
-
-
-class TopologyChangeExperiments:
-    """
-    We firstly train a model (via train_eval_loop),
-    then we pick val data and run it through the model again,
-    but now we track the topology changes
-    """
-
-    def __init__(
-        self,
-        model,
-        datasets: List,
-        model_config={"num_of_hidden": 1, "dim_of_hidden": 3},
-        n_experiments=30,
-        list_of_activations=[
-            "split_tanh",
-            "split_sign",
-            "split_sincos",
-            "relu",
-        ],
-        test_ratio=0.2,
-        epochs=5000,
-        title_name=None,
-    ) -> None:
-        self.model = model
-        self.datasets = datasets
-        self.model_config = model_config
-        self.n_experiments = n_experiments
-        self.list_of_activations = list_of_activations
-        self.test_ratio = test_ratio
-        self.epochs = epochs
-        self.title_name = (
-            title_name if title_name is not None else "_n_{}_d_{}".format(model_config["num_of_hidden"], model_config["dim_of_hidden"])
-        )
-
-    def run_experiments(self, verbose=False, plot_results=True, homology_of_label=-1):
-        results = {}
-        for dataset in self.datasets:
-            results[dataset] = {}
-            if verbose:
-                print("Working with dataset {}".format(dataset))
-            for activation in self.list_of_activations:
-                print("Working with activation {}".format(activation))
-                topo_changes = np.zeros((self.n_experiments, self.model_config["num_of_hidden"] + 2))
-                for i in range(self.n_experiments):
-                    model = self.model(
-                        dim_of_in=dataset.dim,
-                        num_of_hidden=self.model_config["num_of_hidden"],
-                        dim_of_hidden=self.model_config["dim_of_hidden"],
-                        activation=activation,
-                    )
-                    res = train_eval_loop(
-                        model,
-                        dataset,
-                        epochs=self.epochs,
-                        test_ratio=self.test_ratio,
-                        return_topo_changes=True,
-                    )
-                    topo_changes[i] = [d[homology_of_label] for d in res]
-                mean_topo_change = np.mean(topo_changes, axis=0)
-                std_topo_change = np.mean(topo_changes, axis=0)
-                results[dataset][activation] = (mean_topo_change, std_topo_change)
-                print("Mean topology changes = {}".format(mean_topo_change))
-
-        if plot_results:
-            self.plot_results(results)
-
-        return results
 
 
 def main_activations():

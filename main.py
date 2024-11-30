@@ -2,7 +2,7 @@ import hydra
 import hydra.utils as hu
 from omegaconf import OmegaConf
 
-from src.experiments import ActivationExperiments, TopologyChangeExperiments
+from src.experiments import ActivationExperiments
 
 OmegaConf.register_new_resolver("get_object", resolver=lambda obj: hu.get_object(obj))
 
@@ -29,16 +29,6 @@ def main(cfg):
 )
 def run_activation_experiments(cfg):
     experiments = ActivationExperiments(cfg)
-    experiments.run()
-
-
-@hydra.main(
-    version_base=None,
-    config_path="configs",
-    config_name="default_topological",
-)
-def run_topological_experiments(cfg):
-    experiments = TopologyChangeExperiments(cfg)
     experiments.run()
 
 
