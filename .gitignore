@@ -16,3 +16,14 @@ logs
 *_old.py
 *.eps
 data
+*.log
+*.npy
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.out
+*.ps
+*.gz
+*.bib
+esannV2*
