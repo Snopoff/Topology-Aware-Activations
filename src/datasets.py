@@ -1,8 +1,7 @@
-from .topology import compute_homology
-from .data_utils import create_ring, create_torus, create_sphere, prepare_data_from_csv
+from .data_utils import create_ring, create_torus
 from .visualisations import scatterplot
 
-from typing import List, Union, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple
 
 import numpy as np
 from sklearn import datasets as dt
@@ -76,7 +75,9 @@ class Dataset:
 
             return train_x, train_y, test_x, test_y
         if self.tensor_dataset:
-            train_set, test_set = random_split(self.tensor_dataset, [1 - test_ratio, test_ratio])
+            train_set, test_set = random_split(
+                self.tensor_dataset, [1 - test_ratio, test_ratio]
+            )
             train_loader = DataLoader(
                 dataset=train_set,
                 batch_size=len(train_set) if batch_size == -1 else batch_size,
@@ -93,7 +94,9 @@ class Dataset:
         if color is None:
             color = self.y
         if self.dim == 2:
-            return scatterplot(x_coords=self.X[:, 0], y_coords=self.X[:, 1], color=color, save=save)
+            return scatterplot(
+                x_coords=self.X[:, 0], y_coords=self.X[:, 1], color=color, save=save
+            )
         if self.dim == 3:
             return scatterplot(
                 x_coords=self.X[:, 0],
@@ -114,7 +117,9 @@ class Circles(Dataset):
             0: [self.n_circles_per_class, self.n_circles_per_class],
             1: [self.n_circles_per_class, self.n_circles_per_class],
         }
-        super().__init__(*self.__generate_data(margin, noise), name="circles", homology=homology)
+        super().__init__(
+            *self.__generate_data(margin, noise), name="circles", homology=homology
+        )
 
     def __generate_data(self, margin, noise):
         circles_in_a_row = int(np.sqrt(self.n_circles_per_class))
@@ -140,7 +145,9 @@ class Blobs(Dataset):
         self.n_features = n_features
 
         super().__init__(
-            *dt.make_blobs(n_samples=self.n_samples, n_features=self.n_features, centers=2),
+            *dt.make_blobs(
+                n_samples=self.n_samples, n_features=self.n_features, centers=2
+            ),
             name="blobs",
         )
 
@@ -232,17 +239,35 @@ class Tori(Dataset):
         X1 = self.__draw_circle(r=r, center=np.array((0, 0)), n=N_SAMPLES, rand=False)
         X2 = self.__draw_circle(r=r, center=np.array((0, 0)), n=N_SAMPLES, rand=False)
 
-        X[0:N_SAMPLES, 0] = (X1[:, 0]) * self.shapeParam2 + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0]) * q
-        X[0:N_SAMPLES, 1] = (X1[:, 1]) * self.shapeParam2 + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0]) * q
-        X[0:N_SAMPLES, 2] = np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0]) * q
+        X[0:N_SAMPLES, 0] = (
+            (X1[:, 0]) * self.shapeParam2
+            + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0])
+            * q
+        )
+        X[0:N_SAMPLES, 1] = (
+            (X1[:, 1]) * self.shapeParam2
+            + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0])
+            * q
+        )
+        X[0:N_SAMPLES, 2] = (
+            np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0])
+            * q
+        )
 
         X[N_SAMPLES : 2 * N_SAMPLES, 0] = (
-            X2[:, 0] * self.shapeParam3 + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0]) * q
+            X2[:, 0] * self.shapeParam3
+            + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0])
+            * q
         )
         X[N_SAMPLES : 2 * N_SAMPLES, 1] = (
-            X2[:, 1] * self.shapeParam3 + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0]) * q
+            X2[:, 1] * self.shapeParam3
+            + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0])
+            * q
         )
-        X[N_SAMPLES : 2 * N_SAMPLES, 2] = np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0]) * q
+        X[N_SAMPLES : 2 * N_SAMPLES, 2] = (
+            np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0])
+            * q
+        )
 
         y[:] = flip
         y[0:N_SAMPLES] = flip
@@ -256,17 +281,35 @@ class Tori(Dataset):
         X1 = self.__draw_circle(r=r, center=np.array((0, 0)), n=N_SAMPLES)
         X2 = self.__draw_circle(r=r, center=np.array((0, 0)), n=N_SAMPLES)
 
-        X[0:N_SAMPLES, 0] = (X1[:, 0]) * self.shapeParam2 + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0]) * q
-        X[0:N_SAMPLES, 2] = (X1[:, 1]) * self.shapeParam2 + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0]) * q
-        X[0:N_SAMPLES, 1] = np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0]) * q
+        X[0:N_SAMPLES, 0] = (
+            (X1[:, 0]) * self.shapeParam2
+            + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0])
+            * q
+        )
+        X[0:N_SAMPLES, 2] = (
+            (X1[:, 1]) * self.shapeParam2
+            + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0])
+            * q
+        )
+        X[0:N_SAMPLES, 1] = (
+            np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0])
+            * q
+        )
 
         X[N_SAMPLES : 2 * N_SAMPLES, 0] = (
-            X2[:, 0] * self.shapeParam3 + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0]) * q
+            X2[:, 0] * self.shapeParam3
+            + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0])
+            * q
         )
         X[N_SAMPLES : 2 * N_SAMPLES, 2] = (
-            X2[:, 1] * self.shapeParam3 + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0]) * q
+            X2[:, 1] * self.shapeParam3
+            + np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0])
+            * q
         )
-        X[N_SAMPLES : 2 * N_SAMPLES, 1] = np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0]) * q
+        X[N_SAMPLES : 2 * N_SAMPLES, 1] = (
+            np.random.uniform(low=-self.range, high=self.range, n_points=X1.shape[0])
+            * q
+        )
 
         y[:] = 1 - flip
         y[0:N_SAMPLES] = 1 - flip
@@ -295,7 +338,9 @@ class Tori(Dataset):
 
 
 class Disks(Dataset):
-    def __init__(self, random=False, grid_min=-9, grid_max=9, res=0.19, big_r=7, small_r=2.1, n=9):
+    def __init__(
+        self, random=False, grid_min=-9, grid_max=9, res=0.19, big_r=7, small_r=2.1, n=9
+    ):
         self.grid_min = grid_min
         self.grid_max = grid_max
         self.res = res
@@ -369,14 +414,23 @@ class Disks(Dataset):
 
 
 class NestedDataset(Dataset, ABC):
-    def __init__(self, name: str, homology: Dict[int, List[int]] = None, base_n_points=2000, n_in_nest=3, n_in_row=2):
+    def __init__(
+        self,
+        name: str,
+        homology: Dict[int, List[int]] = None,
+        base_n_points=2000,
+        n_in_nest=3,
+        n_in_row=2,
+    ):
         self.base_n_points = base_n_points
         self.n_in_nest = n_in_nest
         self.n_in_row = n_in_row
         super().__init__(*self.__generate_data(), name=name, homology=homology)
 
     @abstractmethod
-    def _generate_parameters_for_creating_data_object(self, i: int, j: int) -> Dict[str, Any]:
+    def _generate_parameters_for_creating_data_object(
+        self, i: int, j: int
+    ) -> Dict[str, Any]:
         pass
 
     @abstractmethod
@@ -424,9 +478,17 @@ class NestedRings(NestedDataset):
                 n_in_nest * n_in_row,
             ],
         }
-        super().__init__(name="nested_rings", homology=homology, base_n_points=base_n_points, n_in_nest=n_in_nest, n_in_row=n_in_row)
+        super().__init__(
+            name="nested_rings",
+            homology=homology,
+            base_n_points=base_n_points,
+            n_in_nest=n_in_nest,
+            n_in_row=n_in_row,
+        )
 
-    def _generate_parameters_for_creating_data_object(self, i: int, j: int) -> Dict[str, Any]:
+    def _generate_parameters_for_creating_data_object(
+        self, i: int, j: int
+    ) -> Dict[str, Any]:
         center = (
             np.array(
                 [
@@ -475,9 +537,17 @@ class NestedTori(NestedDataset):
                 n_in_nest * n_in_row,
             ],
         }
-        super().__init__(name="nested_tori", homology=homology, base_n_points=base_n_points, n_in_nest=n_in_nest, n_in_row=n_in_row)
+        super().__init__(
+            name="nested_tori",
+            homology=homology,
+            base_n_points=base_n_points,
+            n_in_nest=n_in_nest,
+            n_in_row=n_in_row,
+        )
 
-    def _generate_parameters_for_creating_data_object(self, i: int, j: int) -> Dict[str, Any]:
+    def _generate_parameters_for_creating_data_object(
+        self, i: int, j: int
+    ) -> Dict[str, Any]:
         center = np.array([(i * 2 - (self.n_in_row - 1)) * self.base_radius * 3, 0, 0])
         major_radius = self.base_radius * (self.radius_factor**j)
         minor_radius = self.add_radius * (self.radius_factor**j)
@@ -517,7 +587,9 @@ class CurvesOnTorus(Dataset):
         t = np.linspace(0, 2 * np.pi * self.n_revolutions, self.n_points)
         labels = []
 
-        data = np.vstack([self.__generate_spiral(t, 0), self.__generate_spiral(t, self.link_offset)])
+        data = np.vstack(
+            [self.__generate_spiral(t, 0), self.__generate_spiral(t, self.link_offset)]
+        )
         labels = np.concatenate([np.zeros(self.n_points), np.ones(self.n_points)])
 
         return data, labels
@@ -529,8 +601,12 @@ class CurvesOnTorus(Dataset):
         u = np.random.uniform(0, 2 * np.pi, self.n_points)
         v = np.random.uniform(0, self.spiral_radius, self.n_points)
 
-        x = (self.R + self.r * np.cos(phi) + v * np.cos(u) * np.cos(phi)) * np.cos(theta)
-        y = (self.R + self.r * np.cos(phi) + v * np.cos(u) * np.cos(phi)) * np.sin(theta)
+        x = (self.R + self.r * np.cos(phi) + v * np.cos(u) * np.cos(phi)) * np.cos(
+            theta
+        )
+        y = (self.R + self.r * np.cos(phi) + v * np.cos(u) * np.cos(phi)) * np.sin(
+            theta
+        )
         z = self.r * np.sin(phi) + v * np.sin(u)
 
         return np.column_stack((x, y, z))
@@ -541,19 +617,3 @@ class BreastCancer(Dataset):
         X, y = load_breast_cancer(return_X_y=True)
         name = "Breast cancer"
         super().__init__(X, y, name)
-
-
-def main():
-    tori = Tori()
-    print(
-        tori.name,
-        tori.size,
-        tori.y[tori.y == 0].shape,
-        tori.y[tori.y == 1].shape,
-        tori.scale,
-    )
-    tori.plot_data()
-
-
-if __name__ == "__main__":
-    main()

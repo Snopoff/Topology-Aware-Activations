@@ -1,4 +1,3 @@
-from .datasets import Dataset, Circles, Tori, Disks
 from .models import LightningModel
 from .utils import mkdir_p
 
@@ -6,11 +5,7 @@ from lightning.pytorch import Trainer, seed_everything
 from lightning.pytorch.loggers import WandbLogger
 from lightning.pytorch.tuner import Tuner
 
-from typing import List
-import numpy as np
 import hydra
-import wandb
-import time
 
 
 class Experiments:
@@ -24,13 +19,17 @@ class Experiments:
         mkdir_p(self.config["experiment"]["wandb_dir"])
         wandb_logger = WandbLogger(
             project=self.config["experiment"]["wandb_project"],
-            name=f'{self.dataset.name}_model_{self.config["logging"]["model"]}_hidden_{self.config["model"]["num_of_hidden"]}_dim_{self.config["model"]["dim_of_hidden"]}_activation_{self.config["logging"]["activation"]}_experiment_{self.config["experiment"]["seed"]+1}',
-            group=f'{self.dataset.name}_hidden_{self.config["model"]["num_of_hidden"]}_dim_{self.config["model"]["dim_of_hidden"]}_activation_{self.config["logging"]["activation"]}',
+            name=f"{self.dataset.name}_model_{self.config['logging']['model']}_hidden_{self.config['model']['num_of_hidden']}_dim_{self.config['model']['dim_of_hidden']}_activation_{self.config['logging']['activation']}_experiment_{self.config['experiment']['seed'] + 1}",
+            group=f"{self.dataset.name}_hidden_{self.config['model']['num_of_hidden']}_dim_{self.config['model']['dim_of_hidden']}_activation_{self.config['logging']['activation']}",
             offline=self.config["experiment"]["offline"],
             save_dir=self.config["experiment"]["wandb_dir"],
         )
-        wandb_logger.experiment.config.update({key: value for key, value in self.config["logging"].items()})
-        lightning_model = LightningModel(model=self.model, learning_rate=self.config["trainer"]["optimizer_lr"])
+        wandb_logger.experiment.config.update(
+            {key: value for key, value in self.config["logging"].items()}
+        )
+        lightning_model = LightningModel(
+            model=self.model, learning_rate=self.config["trainer"]["optimizer_lr"]
+        )
         trainer = Trainer(
             deterministic=True,
             logger=wandb_logger,
@@ -63,7 +62,9 @@ class Experiments:
 
         #! === Computing TC ===
         topo_info_per_layer = lightning_model.compute_topological_complexity(
-            self.dataset.tensor_dataset.tensors[0], labels=self.dataset.tensor_dataset.tensors[1], subsample_size=None
+            self.dataset.tensor_dataset.tensors[0],
+            labels=self.dataset.tensor_dataset.tensors[1],
+            subsample_size=None,
         )
 
         """tc_per_layer = [layer[-1] for layer in topo_info_per_layer]
@@ -82,41 +83,6 @@ class ActivationExperiments(Experiments):
     def __init__(self, config: dict):
         super().__init__(config)
         self.activation = hydra.utils.instantiate(config["activation"])
-        self.model = hydra.utils.instantiate(config["model"], activation=self.activation)
-
-
-def main_activations():
-    circles, tori, disks = Circles(), Tori(), Disks()
-    datasets = [circles, tori, disks]
-    experiment = ActivationExperiments(
-        model=ClassifierAL,
-        datasets=datasets,
-        n_experiments=2,
-        num_of_hidden_layers=range(1, 2),
-        dim_of_hidden_layers=(3, 4),
-        list_of_activations=["split_tanh", "split_sincos", "relu"],
-        verbose=False,
-    )
-    start_time = time.time()
-    experiment.run_experiments()
-    end_time = time.time()
-    print("Time spent = {:.2f} min".format((end_time - start_time) / 60))
-
-
-def main_topo_changes():
-    datasets = [Circles()]
-    experiment = TopologyChangeExperiments(
-        model=ClassifierAL,
-        datasets=datasets,
-        n_experiments=2,
-        list_of_activations=["relu", "split_tanh", "split_sincos"],
-        model_config={"num_of_hidden": 3, "dim_of_hidden": 5},
-    )
-    start_time = time.time()
-    experiment.run_experiments()
-    end_time = time.time()
-    print("Time spent = {:.2f} min".format((end_time - start_time) / 60))
-
-
-if __name__ == "__main__":
-    main_topo_changes()
+        self.model = hydra.utils.instantiate(
+            config["model"], activation=self.activation
+        )

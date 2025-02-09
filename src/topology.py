@@ -7,7 +7,9 @@ def compute_homology(data, maxdim=2, subsample_size=1000, **kwargs):
     return ripser(data, maxdim=maxdim, n_perm=subsample_size, **kwargs)
 
 
-def topological_complexity(X, labels=None, maxdim=1, subsample_size=1000, drop_zeroth=True, scale=None):
+def topological_complexity(
+    X, labels=None, maxdim=1, subsample_size=1000, drop_zeroth=True, scale=None
+):
     if labels is not None:
         data = obtain_points_for_each_label(X, labels)
     else:
@@ -19,26 +21,20 @@ def topological_complexity(X, labels=None, maxdim=1, subsample_size=1000, drop_z
             res = res[1:]
         if scale is not None:
             if isinstance(scale, int):
-                res_at_scale = [gen for hom in res for gen in hom if gen[0] <= scale and scale < gen[1]]
+                res_at_scale = [
+                    gen
+                    for hom in res
+                    for gen in hom
+                    if gen[0] <= scale and scale < gen[1]
+                ]
                 b_numbers[label] = len(res_at_scale)
             if isinstance(scale, list):
                 b_numbers[label] = dict()
                 for s in scale:
-                    res_at_scale = [gen for hom in res for gen in hom if gen[0] <= s and s < gen[1]]
+                    res_at_scale = [
+                        gen for hom in res for gen in hom if gen[0] <= s and s < gen[1]
+                    ]
                     b_numbers[label][s] = len(res_at_scale)
         else:
             b_numbers[label] = sum([hom.shape[0] for hom in res])
     return b_numbers
-
-
-#! use hydra decorator to run `main` and `hydra.instantiate` to avoid direct imports
-#! because direct imports can lead to circluar imports
-def main():
-    circle = Circles()
-    scale = [0.5, 1, 1.5]
-    res = topological_complexity(circle.X, labels=circle.y, scale=scale)
-    print(res)
-
-
-if __name__ == "__main__":
-    main()

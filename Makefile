@@ -1,7 +1,7 @@
 CONFIG_NAME ?= default_config
 
 run-experiments:
-	python -m run_experiments --config-path configs --config-name $(CONFIG_NAME)
+	python -m main --config-path configs --config-name $(CONFIG_NAME)
 
 ENTITY_NAME ?= default
 PROJECT_NAME ?= default

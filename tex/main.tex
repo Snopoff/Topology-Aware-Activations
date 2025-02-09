@@ -1,7 +1,9 @@
 \documentclass{esannV2}
 \usepackage[dvips]{graphicx}
-\usepackage[latin1]{inputenc}
+%\usepackage[latin1]{inputenc}
 \usepackage{amssymb,amsmath,array}
+\usepackage{subcaption}
+\usepackage{epstopdf}
 
 %\usepackage[papersize={210mm,297mm}]{geometry}
 
@@ -97,7 +99,7 @@ where $c$ controls the distortion of that cut at $0$. When used as an activation
 While effective in splitting data, $\signsplit$ is non-differentiable and thus unsuitable as an activation function in neural networks. To address this limitation, we propose a smooth approximation, \( \smoothsplit \), defined as: $$\smoothsplit(x) = x + \mathrm{tanh}(\alpha x)c.$$
 where $\alpha$ determines the sharpness of the approximation. For sufficiently large $\alpha$, \( \smoothsplit \) closely approximates \( \signsplit \) while maintaining differentiability, making it compatible with the neural network training pipeline.
 
-Interestingly, \( \smoothsplit \) can be viewed as a modification of the skip (or residual) connection mechanism commonly used in deep learning: $$y = x + F(x),$$where $F$ represent a network layer. In our case, $F(x) = \mathrm{tanh}(\alpha x)c.$ This formulation offers a topological interpretation of skip connections, shedding light on their success. However, exploring these connections is beyond the scope of this work.
+%Interestingly, \( \smoothsplit \) can be viewed as a modification of the skip (or residual) connection mechanism commonly used in deep learning: $$y = x + F(x),$$where $F$ represent a network layer. In our case, $F(x) = \mathrm{tanh}(\alpha x)c.$ This formulation offers a topological interpretation of skip connections, shedding light on their success. However, exploring these connections is beyond the scope of this work.
 
 While splitting data manifolds simplifies their topology, neural networks may still need to <<glue>> points together, particularly in the final layers. To enable both splitting and compressing operations, we propose a parametric activation function, \( \parametricsplit \), defined as:
 
@@ -128,14 +130,17 @@ In summary, there are two primary types of manifold deformations: compression an
 We evaluated the proposed activation functions in binary classification tasks, comparing their performance with \( \relu \), $\tanh$, and \( \prelu \). The experiments involved two synthetic datasets, CurvesOnTorus and Circles, and one real-world dataset, the Breast Cancer Wisconsin dataset. In the synthetic datasets, each class is sampled from a distinct manifold that is intertwined with others, making linear separability impossible. The data manifolds in these synthetic datasets are one-dimensional and immersed in $\mathbb{R}^2$ and $\mathbb{R}^3$ for Circles and CurvesOnTorus, respectively (illustrated in Figure~\ref{fig:data_manifolds}).
 
 \begin{figure}[!htb]
-  \minipage{0.49\textwidth}
-  \includegraphics[width=\linewidth]{images/circles.eps}
-  \caption{Dataset Circles}
-  \endminipage\hfill
-  \minipage{0.49\textwidth}%
-  \includegraphics[width=\linewidth]{images/curves_on_torus.eps}
-  \caption{Dataset CurvesOnTorus}
-  \endminipage
+  \centering
+  \begin{subfigure}[b]{0.45\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{images/circles}
+    \caption{Dataset Circles}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.45\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{images/curves_on_torus}
+    \caption{Dataset CurvesOnTorus}
+  \end{subfigure}
   \caption{Synthetic datasets}
   \label{fig:data_manifolds}
 \end{figure}

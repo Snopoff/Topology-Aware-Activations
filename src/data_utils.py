@@ -9,7 +9,10 @@ def create_ring(center, inner_radius, outer_radius, num_points) -> np.ndarray:
     Create a ring with a given center, inner radius, and outer radius containing num_points.
     """
     angles = np.linspace(0, 2 * np.pi, num_points)
-    radii = np.sqrt(np.random.rand(num_points) * (outer_radius**2 - inner_radius**2) + inner_radius**2)
+    radii = np.sqrt(
+        np.random.rand(num_points) * (outer_radius**2 - inner_radius**2)
+        + inner_radius**2
+    )
     x = center[0] + radii * np.cos(angles)
     y = center[1] + radii * np.sin(angles)
     return np.vstack((x, y)).T
@@ -52,7 +55,3 @@ def create_sphere(center, radius, num_points) -> np.ndarray:
 def prepare_data_from_csv(csv_path: str) -> Tuple[np.ndarray, np.ndarray]:
     df = pd.read_csv(csv_path)
     print(len(df.dropna()))
-
-
-if __name__ == "__main__":
-    prepare_data_from_csv("data/Titanic/train.csv")

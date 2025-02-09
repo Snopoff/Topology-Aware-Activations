@@ -3,7 +3,6 @@ from torch import nn
 import torch.nn.functional as F
 import lightning as L
 
-from .plottings import plot_line
 from .topology import topological_complexity
 
 
@@ -93,10 +92,16 @@ class Classifier1L(nn.Module):
 
         self.fc_in = nn.Linear(dim_of_in, dim_of_hidden)
         self.norm = nn.BatchNorm1d(dim_of_hidden) if use_batch_norm else None
-        self.hiddens = nn.ModuleList([nn.Linear(dim_of_hidden, dim_of_hidden) for _ in range(num_of_hidden)])
+        self.hiddens = nn.ModuleList(
+            [nn.Linear(dim_of_hidden, dim_of_hidden) for _ in range(num_of_hidden)]
+        )
         self.fc_out = nn.Linear(dim_of_hidden, 2)
 
-        self.activation = torch.jit.script(activation) if isinstance(activation, torch.nn.Module) else activation
+        self.activation = (
+            torch.jit.script(activation)
+            if isinstance(activation, torch.nn.Module)
+            else activation
+        )
 
         if initialize_weights:
             self.apply(self.__initialize_weights)
@@ -124,7 +129,9 @@ class Classifier1L(nn.Module):
     def __initialize_weights(self, module):
         if isinstance(module, nn.Linear):
             if isinstance(self.activation, torch.nn.modules.activation.ReLU):
-                torch.nn.init.xavier_uniform_(module.weight)  #! check the paper of ReLU initialization and loss surface study
+                torch.nn.init.xavier_uniform_(
+                    module.weight
+                )  #! check the paper of ReLU initialization and loss surface study
             else:
                 torch.nn.init.xavier_normal_(module.weight)
 
@@ -149,10 +156,16 @@ class ClassifierAL(nn.Module):
 
         self.fc_in = nn.Linear(dim_of_in, dim_of_hidden)
         self.norm = nn.BatchNorm1d(dim_of_hidden) if use_batch_norm else None
-        self.hiddens = nn.ModuleList([nn.Linear(dim_of_hidden, dim_of_hidden) for _ in range(num_of_hidden)])
+        self.hiddens = nn.ModuleList(
+            [nn.Linear(dim_of_hidden, dim_of_hidden) for _ in range(num_of_hidden)]
+        )
         self.fc_out = nn.Linear(dim_of_hidden, 2)
 
-        self.activation = torch.jit.script(activation) if isinstance(activation, torch.nn.Module) else activation
+        self.activation = (
+            torch.jit.script(activation)
+            if isinstance(activation, torch.nn.Module)
+            else activation
+        )
 
         self.topo_info = [None] * (num_of_hidden + 2)
 
@@ -191,7 +204,9 @@ class ClassifierAL(nn.Module):
     def __initialize_weights(self, module):
         if isinstance(module, nn.Linear):
             if isinstance(self.activation, torch.nn.modules.activation.ReLU):
-                torch.nn.init.xavier_uniform_(module.weight)  #! check the paper of ReLU initialization and loss surface study
+                torch.nn.init.xavier_uniform_(
+                    module.weight
+                )  #! check the paper of ReLU initialization and loss surface study
             else:
                 torch.nn.init.xavier_normal_(module.weight)
 
@@ -231,14 +246,3 @@ class LightningModel(L.LightningModule):
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
         return optimizer
-
-
-def main():
-    x_range = torch.linspace(-3, 3, 50)
-    func = split_sincos()
-    y_range = func(x_range).detach().numpy()
-    plot_line(x_range, y_range, save=True, filename="sincos.png")
-
-
-if __name__ == "__main__":
-    main()
