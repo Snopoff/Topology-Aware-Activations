@@ -3,6 +3,9 @@ import pandas as pd
 
 from typing import Tuple
 
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+
 
 def create_ring(center, inner_radius, outer_radius, num_points) -> np.ndarray:
     """
@@ -55,3 +58,69 @@ def create_sphere(center, radius, num_points) -> np.ndarray:
 def prepare_data_from_csv(csv_path: str) -> Tuple[np.ndarray, np.ndarray]:
     df = pd.read_csv(csv_path)
     print(len(df.dropna()))
+
+
+def scatterplot(
+    x_coords,
+    y_coords,
+    color,
+    z_coords=None,
+    dim=2,
+    engine="plotly",
+    save=False,
+    name="images/test.png",
+    plotly_marker=dict(
+        size=10, colorscale="RdBu", colorbar=dict(title="Colorbar"), opacity=1
+    ),
+    **kwargs,
+):
+    if engine == "matplotlib":
+        fig = plt.figure()
+
+        if dim == 2:
+            ax = fig.add_subplot()
+            ax.scatter(x_coords, y_coords, c=color)
+        elif dim == 3:
+            ax = fig.add_subplot(projection="3d")
+            ax.scatter(x_coords, y_coords, z_coords, c=color)
+        else:
+            raise ValueError(f"Dimension {dim} is not supported.")
+
+        if save:
+            fig.savefig(name)
+        return fig
+
+    if engine == "plotly":
+        plotly_marker["color"] = color
+        fig = go.Figure()
+        if dim == 2:
+            fig.add_trace(
+                go.Scatter(
+                    x=x_coords,
+                    y=y_coords,
+                    mode="markers",
+                    marker=plotly_marker,
+                    **kwargs,
+                )
+            )
+
+            fig.update_layout(margin=dict(l=0, r=0, b=0, t=0))
+            if save:
+                fig.write_image(name)
+            return fig
+        if dim == 3:
+            fig.add_trace(
+                go.Scatter3d(
+                    x=x_coords,
+                    y=y_coords,
+                    z=z_coords,
+                    mode="markers",
+                    marker=plotly_marker,
+                    **kwargs,
+                )
+            )
+
+            fig.update_layout(margin=dict(l=0, r=0, b=0, t=0))
+            if save:
+                fig.write_image(name)
+            return fig

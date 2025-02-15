@@ -1,5 +1,4 @@
-from .data_utils import create_ring, create_torus
-from .visualisations import scatterplot
+from .data_utils import create_ring, create_torus, scatterplot
 
 from typing import List, Dict, Any, Tuple
 
